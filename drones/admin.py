@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import User, AP, Swarm, Drone
+
+admin.site.register(User)
+admin.site.register(AP)
+admin.site.register(Swarm)
+admin.site.register(Drone)
