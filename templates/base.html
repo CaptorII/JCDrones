@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %} - Drone Launchpad</title>
+    <link rel="icon" type="image/png" href="/favico.png">
+    <style>
+        header nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        header nav ul li {
+            display: inline;
+            margin-right: 20px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Drone Launchpad</h1>
+    <nav>
+        <ul>
+            <li><a href="{% url 'index' %}">Home</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'logout' %}">Log Out</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</header>
+{% block content %}
+{% endblock %}
+</body>
+</html>
