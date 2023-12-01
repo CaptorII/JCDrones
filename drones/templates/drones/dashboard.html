@@ -5,48 +5,36 @@
 {% block content %}
 <div id="dashboardContent">
     <h2>Dashboard</h2>
+    {% if active_ap %}
+        <h3>AP: {{ active_ap.SSID }}</h3>
+    {% endif %}
+    <label for="ap_select">Change AP:</label>
+        <select name="ap_id" id="ap_select" onchange="window.location.href = '{% url 'dashboard' %}?ap_id=' + this.value">
+            <option value="" selected disabled>Select an AP</option>
+            {% for ap in aps %}
+                <option value="{{ ap.id }}">{{ ap.SSID }}</option>
+            {% endfor %}
+        </select>
     {% if swarm %}
         <h3>Swarm Name: {{ swarm.swarm_name }}</h3>
-        <form method="post" action="{% url 'add_drone' %}">
+        <form method="post" action="{% url 'add_drone' %}?ap_id={{ active_ap.id }}">
             {% csrf_token %}
-            <input type="hidden" name="swarm_id" value="{{ swarm.swarm_ID }}" />
+            <input type="hidden" name="swarm_id" value="{{ swarm.id }}" />
             <button type="submit">Add Drone</button>
         </form>
         <p><strong>Output box:</strong></p>
         <div style="height: 400px; width: available; border:1px solid black;">
             <ul id="instanceList">
             {% for drone in drones %}
-                <li onclick="selectItem(this)" data-id="{{ instance.id }}">{{ instance }}</li>
+                <li onclick="selectItem(this)" data-id="{{ drone.id }}">
+                    Name: {{ drone.drone_name }} | IP: {{ drone.IP_address }} | MAC: {{ drone.MAC_address }}
+                </li>
             {% endfor %}
             </ul>
         </div>
         <p><button>Takeoff</button></p>
     {% else %}
-    <form method="post">
-        {% csrf_token %}
-        <p>
-            <label for="ap_select">Select Access Point:</label>
-            <select name="ap_select" id="ap_select">
-                <option value="" selected disabled>Select an AP</option>
-                {% for ap in access_points %}
-                    <option value="{{ ap.id }}">{{ ap.SSID }}</option>
-                {% endfor %}
-            </select>
-        </p>
-        <p>
-            <label for="swarm_select">Select Swarm:</label>
-            <select name="swarm_select" id="swarm_select">
-                <option value="" selected disabled>Select a Swarm</option>
-                {% for swarm in swarms %}
-                    <option value="{{ swarm.id }}">{{ swarm.swarm_name }}</option>
-                {% endfor %}
-            </select>
-        </p>
-        <p>
-            <button type="submit">Submit</button>
-        </p>
-    </form>
-        <form method="post" action="{% url 'add_swarm' %}">
+        <form method="post" action="{% url 'add_swarm' %}?ap_id={{ active_ap.id }}">
             {% csrf_token %}
             <button type="submit">Add Swarm</button>
         </form>

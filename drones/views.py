@@ -1,11 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from django.contrib.auth.forms import UserCreationForm
-from django.urls import reverse_lazy
-from django.views import generic, View
+from django.views import View
 from .models import Swarm, Drone, User, AP
 from .forms import APForm, SwarmForm, DroneForm
-from django.utils import timezone
 from .sync_users import sync_users
 
 
@@ -15,27 +12,43 @@ def index(request):
 
 
 def dashboard(request):
+    aps = AP.objects.all()
+    ap_id = request.GET.get('ap_id')
+    active_ap = get_object_or_404(AP, id=ap_id) if ap_id else None
+    swarms = Swarm.objects.all()
     swarm = get_latest_swarm()
-    context = {'swarm': swarm}
+    drones = Drone.objects.filter(swarm_ID=swarm)
+    context = {'aps': aps, 'active_ap': active_ap, 'swarms': swarms, 'swarm': swarm, 'drones': drones}
     return render(request, "drones/dashboard.html", context)
+
+
+def get_latest_swarm():
+    return Swarm.objects.last()
+
+
+def get_current_user(request):
+    return User.objects.get(username=request.user.username)
+
+
+def get_next_drone_id(swarm):
+    return Drone.objects.filter(swarm_ID=swarm).count() + 1
 
 
 def add_swarm(request):
     if request.method == 'POST':
         user = get_current_user(request)
-        new_swarm = Swarm(
+        new_swarm = Swarm.objects.create(
             swarm_name='Swarm1',
-            created_at=timezone.now(),
-            updated_at=timezone.now(),
             updated_by=user)
-        new_swarm.save()
-        return redirect('dashboard')
+        aps = AP.objects.all()
+        ap_id = request.GET.get('ap_id')
+        active_ap = get_object_or_404(AP, id=ap_id) if ap_id else None
+        swarms = Swarm.objects.all()
+        drones = Drone.objects.filter(swarm_ID=new_swarm)
+        context = {'aps': aps, 'active_ap': active_ap, 'swarms': swarms, 'swarm': new_swarm, 'drones': drones}
+        return render(request, 'drones/dashboard.html', context)
     else:
         return HttpResponse('Invalid request')
-
-
-def get_latest_swarm():
-    return Swarm.objects.last()
 
 
 def add_drone(request):
@@ -48,24 +61,15 @@ def add_drone(request):
             IP_address='127.0.0.1',
             updated_by=user,
             swarm_ID=swarm)
+        aps = AP.objects.all()
+        ap_id = request.GET.get('ap_id')
+        active_ap = get_object_or_404(AP, id=ap_id) if ap_id else None
+        swarms = Swarm.objects.all()
         drones = Drone.objects.filter(swarm_ID=swarm)
-        return render(request, 'drones/dashboard.html', {'swarm': swarm, 'drones': drones})
+        context = {'aps': aps, 'active_ap': active_ap, 'swarms': swarms, 'swarm': swarm, 'drones': drones}
+        return render(request, "drones/dashboard.html", context)
     else:
         return HttpResponse('Invalid request')
-
-
-def get_current_user(request):
-    return User.objects.get(username=request.user.username)
-
-
-def get_next_drone_id(swarm):
-    return Drone.objects.filter(swarm_ID=swarm).count() + 1
-
-
-class SignUpView(generic.CreateView):
-    form_class = UserCreationForm
-    success_url = reverse_lazy("login")
-    template_name = "registration/../registration/templates/registration/signup.html"
 
 
 class CRUDView(View):
@@ -83,7 +87,7 @@ class CRUDView(View):
             form = SwarmForm()
         elif model == 'drone':
             swarm_id = request.GET.get('swarm_id')
-            form = DroneForm(swarm_id=swarm_id)
+            form = DroneForm(swarm_id)
             instances = Drone.objects.all()
 
         return render(request, self.template_name, {'model': model, 'instances': instances, 'form': form})
@@ -110,11 +114,15 @@ class CRUDActionView(View):
             if form.is_valid():
                 instance_id = request.POST.get('instance_id')
                 if action == 'create':
-                    form.save()
+                    new_instance = form.save(commit=False)
+                    new_instance.updated_by = get_current_user(request)
+                    new_instance.save()
                 elif action == 'update':
                     instance = get_object_or_404(model_class, pk=instance_id)
                     form = form_class(request.POST, instance=instance)
-                    form.save()
+                    updated_instance = form.save(commit=False)
+                    updated_instance.updated_by = get_current_user(request)
+                    updated_instance.save()
                 elif action == 'delete':
                     instance = get_object_or_404(model_class, pk=instance_id)
                     instance.delete()
