@@ -13,6 +13,9 @@
             display: inline;
             margin-right: 20px;
         }
+        #instanceList li.selected {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
 <body>
@@ -23,6 +26,9 @@
             <li><a href="{% url 'index' %}">Home</a></li>
             {% if user.is_authenticated %}
                 <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'crud' model='ap' %}">APs</a></li>
+                <li><a href="{% url 'crud' model='swarm' %}">Swarms</a></li>
+                <li><a href="{% url 'crud' model='drone' %}">Drones</a></li>
                 <li><a href="{% url 'logout' %}">Log Out</a></li>
             {% endif %}
         </ul>

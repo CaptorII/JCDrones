@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ model|title }}{% endblock %}
+
+{% block content %}
+<h2>{{ model|title }} CRUD</h2>
+<form action="{% url 'crud_action' model=model action='create' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Create</button>
+</form>
+
+<form action="{% url 'crud_action' model=model action='update' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="instance_id" id="instanceIdToUpdate" value="">
+    <button type="submit">Update</button>
+</form>
+
+<form action="{% url 'crud_action' model=model action='delete' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="instance_id" id="instanceIdToDelete" value="">
+    <button type="submit">Delete</button>
+</form>
+
+{% if action == 'create' %}
+    <form method="post" action="{% url 'crud_action' model=model action='create' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+{% else %}
+    <ul id="instanceList">
+        {% for instance in instances %}
+            <li onclick="selectItem(this)" data-id="{{ instance.id }}">{{ instance }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<script>
+    function selectItem(item) {
+        const listItems = document.querySelectorAll('#instanceList li');
+        listItems.forEach(li => li.classList.remove('selected'));
+        item.classList.add('selected');
+
+        // Set the instance ID for update and delete actions
+        const instanceId = item.getAttribute('data-id');
+        document.getElementById('instanceIdToUpdate').value = instanceId;
+        document.getElementById('instanceIdToDelete').value = instanceId;
+    }
+</script>
+{% endblock %}

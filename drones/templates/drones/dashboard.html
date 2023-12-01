@@ -12,15 +12,52 @@
             <input type="hidden" name="swarm_id" value="{{ swarm.swarm_ID }}" />
             <button type="submit">Add Drone</button>
         </form>
+        <p><strong>Output box:</strong></p>
+        <div style="height: 400px; width: available; border:1px solid black;">
+            <ul id="instanceList">
+            {% for drone in drones %}
+                <li onclick="selectItem(this)" data-id="{{ instance.id }}">{{ instance }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        <p><button>Takeoff</button></p>
     {% else %}
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            <label for="ap_select">Select Access Point:</label>
+            <select name="ap_select" id="ap_select">
+                <option value="" selected disabled>Select an AP</option>
+                {% for ap in access_points %}
+                    <option value="{{ ap.id }}">{{ ap.SSID }}</option>
+                {% endfor %}
+            </select>
+        </p>
+        <p>
+            <label for="swarm_select">Select Swarm:</label>
+            <select name="swarm_select" id="swarm_select">
+                <option value="" selected disabled>Select a Swarm</option>
+                {% for swarm in swarms %}
+                    <option value="{{ swarm.id }}">{{ swarm.swarm_name }}</option>
+                {% endfor %}
+            </select>
+        </p>
+        <p>
+            <button type="submit">Submit</button>
+        </p>
+    </form>
         <form method="post" action="{% url 'add_swarm' %}">
             {% csrf_token %}
             <button type="submit">Add Swarm</button>
         </form>
     {% endif %}
-    <p><strong>Output box:</strong></p>
-    <div style="height: 400px; width: available; border:1px solid black;">
-    </div>
-    <p><button>Takeoff</button></p>
 </div>
+
+<script>
+    function selectItem(item) {
+        const listItems = document.querySelectorAll('#instanceList li');
+        listItems.forEach(li => li.classList.remove('selected'));
+        item.classList.add('selected');
+    }
+</script>
 {% endblock %}
