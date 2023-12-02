@@ -47,5 +47,22 @@
         listItems.forEach(li => li.classList.remove('selected'));
         item.classList.add('selected');
     }
+    function fetchBatteryUpdates() {
+        setInterval(function() {
+            const drones = document.querySelectorAll('#instanceList li');
+            drones.forEach(drone => {
+                const droneId = drone.getAttribute('data-id');
+                fetch(`/get_battery_status/${droneId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update battery status next to the drone's name
+                        drone.innerText = `Name: ${data.name} | IP: ${data.IP} | MAC: ${data.MAC} | Battery: ${data.battery}%`;
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        }, 10000); // Fetch every 10 seconds
+    }
+
+    window.onload = fetchBatteryUpdates;
 </script>
 {% endblock %}

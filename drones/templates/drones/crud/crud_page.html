@@ -8,19 +8,6 @@
     {% csrf_token %}
     <button type="submit">Create</button>
 </form>
-
-<form action="{% url 'crud_action' model=model action='update' %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="instance_id" id="instanceIdToUpdate" value="">
-    <button type="submit">Update</button>
-</form>
-
-<form action="{% url 'crud_action' model=model action='delete' %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="instance_id" id="instanceIdToDelete" value="">
-    <button type="submit">Delete</button>
-</form>
-
 {% if action == 'create' %}
     <form method="post" action="{% url 'crud_action' model=model action='create' %}">
         {% csrf_token %}
@@ -28,23 +15,58 @@
         <button type="submit">Submit</button>
     </form>
 {% else %}
+    <form action="{% url 'crud_action' model=model action='update' %}" method="post" onsubmit="rememberSelectedItem()">
+        {% csrf_token %}
+        <input type="hidden" name="instance_id" id="instanceIdToUpdate" value="">
+        <button type="submit">Update</button>
+    </form>
+
+    <form action="{% url 'crud_action' model=model action='delete' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="instance_id" id="instanceIdToDelete" value="{% if selected_instance_id %}{{ selected_instance_id }}{% else %}1{% endif %}">
+        <button type="submit">Delete</button>
+    </form>
+
     <ul id="instanceList">
         {% for instance in instances %}
-            <li onclick="selectItem(this)" data-id="{{ instance.id }}">{{ instance }}</li>
+            {% if model == 'drone' %}
+                <li onclick="selectItem(this)" data-id="{{ instance.id }}">{{ instance.drone_name }} - {{ instance.swarm_ID.swarm_name }}</li>
+            {% elif model == 'swarm' %}
+                <li onclick="selectItem(this)" data-id="{{ instance.id }}">{{ instance.swarm_name }}</li>
+            {% elif model == 'ap' %}
+                <li onclick="selectItem(this)" data-id="{{ instance.id }}">{{ instance.SSID }} - {{ instance.auth_method }}</li>
+            {% endif %}
         {% endfor %}
     </ul>
-{% endif %}
 
+    {% if action == 'update' %}
+        <form method="post" action="{% url 'crud_action' model=model action='update' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="instance_id" id="instanceIdToUpdate_{{ selected_instance_id }}" value="{% if selected_instance_id %}{{ selected_instance_id }}{% endif %}">
+            <button type="submit">Submit</button>
+        </form>
+    {% endif %}
+{% endif %}
 <script>
+    let selectedItemId = null;
+
     function selectItem(item) {
         const listItems = document.querySelectorAll('#instanceList li');
         listItems.forEach(li => li.classList.remove('selected'));
         item.classList.add('selected');
+        selectedItemId = item.getAttribute('data-id');
+        console.log('Selected Item ID:', selectedItemId);
+        document.getElementById('instanceIdToDelete').value = selectedItemId;
+        document.getElementById('instanceIdToUpdate').value = selectedItemId;
+        document.getElementById('instanceIdToUpdate_' + instanceId).value = instanceId;
+    }
 
-        // Set the instance ID for update and delete actions
-        const instanceId = item.getAttribute('data-id');
-        document.getElementById('instanceIdToUpdate').value = instanceId;
-        document.getElementById('instanceIdToDelete').value = instanceId;
+    function rememberSelectedItem() {
+        const previouslySelectedItem = document.querySelector(`#instanceList li[data-id="${selectedItemId}"]`);
+        if (previouslySelectedItem) {
+            previouslySelectedItem.classList.add('selected');
+        }
     }
 </script>
 {% endblock %}

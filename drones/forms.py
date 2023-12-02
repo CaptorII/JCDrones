@@ -23,3 +23,9 @@ class DroneForm(forms.ModelForm):
     class Meta:
         model = Drone
         fields = ['drone_name', 'IP_address']
+
+
+class UpdateDroneForm(forms.ModelForm):
+    class Meta:
+        model = Drone
+        fields = ['drone_name', 'IP_address']

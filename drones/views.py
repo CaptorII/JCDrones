@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views import View
+from djitellopy import Tello
 from .models import Swarm, Drone, User, AP
-from .forms import APForm, SwarmForm, DroneForm
+from .forms import APForm, SwarmForm, DroneForm, UpdateDroneForm
 from .sync_users import sync_users
 
 
@@ -20,6 +21,35 @@ def dashboard(request):
     drones = Drone.objects.filter(swarm_ID=swarm)
     context = {'aps': aps, 'active_ap': active_ap, 'swarms': swarms, 'swarm': swarm, 'drones': drones}
     return render(request, "drones/dashboard.html", context)
+
+
+def takeoff(request, drone_id):
+    drone = Drone.objects.get(pk=drone_id)
+    tello = Tello()
+    tello.connect(drone.IP_address)
+    tello.takeoff()
+    tello.rotate_counter_clockwise(180)
+    tello.land()
+
+
+def get_battery_status(request, drone_id):
+    drone = Drone.objects.get(pk=drone_id)
+
+    try:
+        tello = Tello(host=drone.IP_address)
+        tello.connect()
+        battery_level = tello.get_battery()
+    except Exception as e:
+        print(f"Error retrieving battery level for drone {drone_id}: {e}")
+        battery_level = -1
+
+    battery_status = {
+        'name': drone.drone_name,
+        'IP': drone.IP_address,
+        'MAC': drone.MAC_address,
+        'battery': battery_level
+    }
+    return JsonResponse(battery_status)
 
 
 def get_latest_swarm():
@@ -109,26 +139,34 @@ class CRUDActionView(View):
             form_class = DroneForm
             model_class = Drone
 
-        if action in ('create', 'update', 'delete'):
+        if action == 'create':
             form = form_class(request.POST)
             if form.is_valid():
-                instance_id = request.POST.get('instance_id')
-                if action == 'create':
-                    new_instance = form.save(commit=False)
-                    new_instance.updated_by = get_current_user(request)
-                    new_instance.save()
-                elif action == 'update':
-                    instance = get_object_or_404(model_class, pk=instance_id)
-                    form = form_class(request.POST, instance=instance)
-                    if form.is_valid():
-                        updated_instance = form.save(commit=False)
-                        updated_instance.updated_by = get_current_user(request)
-                        updated_instance.save()
-                elif action == 'delete':
-                    instance = get_object_or_404(model_class, pk=instance_id)
-                    instance.delete()
-                    print("delete complete")
+                new_instance = form.save(commit=False)
+                new_instance.updated_by = get_current_user(request)
+                if model_class == Drone:
+                    new_instance.swarm_ID = Swarm.objects.get(pk=request.POST.get('swarm'))
+                new_instance.save()
+        elif action == 'update':
+            instance_id = request.POST.get('instance_id')
+            instance = get_object_or_404(model_class, pk=instance_id)
+            if model_class == Drone:
+                form = UpdateDroneForm(request.POST, instance=instance)
+            else:
+                form = form_class(request.POST, instance=instance)
+            if form.is_valid():
+                updated_instance = form.save(commit=False)
+                updated_instance.updated_by = get_current_user(request)
+                updated_instance.save()
+        elif action == 'delete':
+            instance_id = request.POST.get('instance_id')
+            try:
+                instance = get_object_or_404(model_class, pk=instance_id)
+                instance.delete()
+            except Exception as e:
+                print(f"Deletion failed: {e}")
 
         instances = model_class.objects.all()
+        selected_instance_id = request.POST.get('instance_id')
         return render(request, self.template_name,
-                      {'model': model, 'instances': instances, 'form': form, 'action': action})
+                      {'model': model, 'instances': instances, 'form': form, 'action': action, 'selected_instance_id': selected_instance_id})
