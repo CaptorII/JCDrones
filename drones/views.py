@@ -120,13 +120,14 @@ class CRUDActionView(View):
                 elif action == 'update':
                     instance = get_object_or_404(model_class, pk=instance_id)
                     form = form_class(request.POST, instance=instance)
-                    updated_instance = form.save(commit=False)
-                    updated_instance.updated_by = get_current_user(request)
-                    updated_instance.save()
+                    if form.is_valid():
+                        updated_instance = form.save(commit=False)
+                        updated_instance.updated_by = get_current_user(request)
+                        updated_instance.save()
                 elif action == 'delete':
                     instance = get_object_or_404(model_class, pk=instance_id)
                     instance.delete()
-                return redirect('crud', model=model)
+                    print("delete complete")
 
         instances = model_class.objects.all()
         return render(request, self.template_name,
