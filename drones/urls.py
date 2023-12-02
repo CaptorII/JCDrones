@@ -10,4 +10,6 @@ urlpatterns = [
     path("add_drone/", views.add_drone, name="add_drone"),
     path('crud/<str:model>/', views.CRUDView.as_view(), name='crud'),
     path('crud/<str:model>/<str:action>/', views.CRUDActionView.as_view(), name='crud_action'),
+    path('get_battery_status/<int:drone_id>/', views.get_battery_status, name='get_battery_status'),
+    path('takeoff/', views.takeoff, name='takeoff'),
 ]

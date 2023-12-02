@@ -24,6 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("registration/", include("registration.urls")),
     path("registration/", include("django.contrib.auth.urls")),
-    path('get_battery_status/<int:drone_id>/', views.get_battery_status, name='get_battery_status'),
     path('__debug__/', include(debug_toolbar.urls)),
 ]

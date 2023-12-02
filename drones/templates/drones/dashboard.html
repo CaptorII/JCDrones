@@ -26,13 +26,17 @@
         <div style="height: 400px; width: available; border:1px solid black;">
             <ul id="instanceList">
             {% for drone in drones %}
-                <li onclick="selectItem(this)" data-id="{{ drone.id }}">
+                <li onclick="selectDrone(this)" data-id="{{ drone.id }}">
                     Name: {{ drone.drone_name }} | IP: {{ drone.IP_address }} | MAC: {{ drone.MAC_address }}
                 </li>
             {% endfor %}
             </ul>
         </div>
-        <p><button>Takeoff</button></p>
+        <form action="{% url 'takeoff' %}" method="post" id="takeoffForm">
+            {% csrf_token %}
+            <input type="hidden" name="drone_id" id="droneIdToTakeoff" value="">
+            <button type="submit">Takeoff</button>
+        </form>
     {% else %}
         <form method="post" action="{% url 'add_swarm' %}?ap_id={{ active_ap.id }}">
             {% csrf_token %}
@@ -40,29 +44,14 @@
         </form>
     {% endif %}
 </div>
-
 <script>
-    function selectItem(item) {
+    function selectDrone(item) {
+        console.log("Clicked");
         const listItems = document.querySelectorAll('#instanceList li');
         listItems.forEach(li => li.classList.remove('selected'));
         item.classList.add('selected');
+        selectedDroneId = item.getAttribute('data-id');
+        document.getElementById('droneIdToTakeoff').value = selectedDroneId;
     }
-    function fetchBatteryUpdates() {
-        setInterval(function() {
-            const drones = document.querySelectorAll('#instanceList li');
-            drones.forEach(drone => {
-                const droneId = drone.getAttribute('data-id');
-                fetch(`/get_battery_status/${droneId}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Update battery status next to the drone's name
-                        drone.innerText = `Name: ${data.name} | IP: ${data.IP} | MAC: ${data.MAC} | Battery: ${data.battery}%`;
-                    })
-                    .catch(error => console.error('Error:', error));
-            });
-        }, 10000); // Fetch every 10 seconds
-    }
-
-    window.onload = fetchBatteryUpdates;
 </script>
 {% endblock %}

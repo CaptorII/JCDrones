@@ -23,24 +23,28 @@ def dashboard(request):
     return render(request, "drones/dashboard.html", context)
 
 
-def takeoff(request, drone_id):
-    drone = Drone.objects.get(pk=drone_id)
-    tello = Tello()
-    tello.connect(drone.IP_address)
+def takeoff(request):
+    drone = Drone.objects.get(pk=request.POST.get('drone_id'))
+    tello = Tello(drone.IP_address)
+    print(request.POST.get('drone_id'))
+    tello.connect()
+    print('connected')
     tello.takeoff()
+    print('takeoff!')
     tello.rotate_counter_clockwise(180)
     tello.land()
+    return render(request, "drones/dashboard.html")
 
 
-def get_battery_status(request, drone_id):
-    drone = Drone.objects.get(pk=drone_id)
+def get_battery_status(request):
+    drone = Drone.objects.get(pk=request.POST.get('drone_id'))
 
     try:
         tello = Tello(host=drone.IP_address)
         tello.connect()
         battery_level = tello.get_battery()
     except Exception as e:
-        print(f"Error retrieving battery level for drone {drone_id}: {e}")
+        print(f"Error retrieving battery level for drone {drone.drone_name}: {e}")
         battery_level = -1
 
     battery_status = {
@@ -50,6 +54,22 @@ def get_battery_status(request, drone_id):
         'battery': battery_level
     }
     return JsonResponse(battery_status)
+
+
+def get_mock_drone_battery(request, drone_id):
+    if request.method == 'POST':
+        state_packet = request.POST.get('state_packet', '')
+        parameters = state_packet.split(';')
+        battery_level = 0
+        for param in parameters:
+            key, value = param.split(':')
+            if key.strip() == 'bat':
+                battery_level = int(value.strip())
+                break
+
+        return JsonResponse({'battery_level': battery_level})
+    else:
+        return JsonResponse({'battery_level': 0})
 
 
 def get_latest_swarm():

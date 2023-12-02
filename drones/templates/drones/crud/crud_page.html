@@ -56,7 +56,6 @@
         listItems.forEach(li => li.classList.remove('selected'));
         item.classList.add('selected');
         selectedItemId = item.getAttribute('data-id');
-        console.log('Selected Item ID:', selectedItemId);
         document.getElementById('instanceIdToDelete').value = selectedItemId;
         document.getElementById('instanceIdToUpdate').value = selectedItemId;
         document.getElementById('instanceIdToUpdate_' + instanceId).value = instanceId;

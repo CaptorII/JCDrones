@@ -90,7 +90,7 @@ class DroneEndPoint(socketserver.BaseRequestHandler):
     Responses are delayed randomly """
     drones = {}
 
-    STATE_PORT = 8990
+    STATE_PORT = 8890
 
     def send_state_information(self, refresh_interval: int = 3) -> None:
         while True:
@@ -128,7 +128,6 @@ class DroneEndPoint(socketserver.BaseRequestHandler):
 class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
     pass
 
-
 def main():
     print("WELCOME TO MOCK xDRONE: \nI pretend to be a drone so you don't have to.")
     # 8999 is NOT the default Tello drone port. Update tello.py accordingly
@@ -142,7 +141,6 @@ def main():
         print("Server loop running in thread:", server_thread.name)
         while True:
             pass
-
 
 if __name__ == "__main__":
     main()
