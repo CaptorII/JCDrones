@@ -1,0 +1,11 @@
+Create a drone swarm application that allows you to register N drones to the system and then control and coordinate them as a single swarm.
+The application must include all of the following:
+- CRUD for registering drones. Must include enough information to control the drones.
+- CRUD for registering drone network controllers.
+- CRUD for grouping drones
+- A simple control frontend to send commands to the drones (e.g. takeoff and land). The control front-end must be used to operate a drone-swarm not individual drones
+- A simple instrumentation front-end that provides some telemetry from the drones.
+The implementation must use the MVC architectural pattern and demonstrate the following:
+- HTTP handlers and routes for GET, POST, PUT and DELETE requests
+- HTML templates, view models and dynamic rendering
+- HTTP request, responses and redirects.
