@@ -34,7 +34,7 @@
         </div>
         <form action="{% url 'takeoff' %}" method="post" id="takeoffForm">
             {% csrf_token %}
-            <input type="hidden" name="drone_id" id="droneIdToTakeoff" value="">
+            <input type="hidden" name="swarm_id" value="{{ swarm.id }}" />
             <button type="submit">Takeoff</button>
         </form>
         <button onclick="startFetching()">Start Updates</button>
@@ -52,8 +52,6 @@
         const listItems = document.querySelectorAll('#instanceList li');
         listItems.forEach(li => li.classList.remove('selected'));
         item.classList.add('selected');
-        selectedDroneId = item.getAttribute('data-id');
-        document.getElementById('droneIdToTakeoff').value = selectedDroneId;
     }
 
     let intervalId;

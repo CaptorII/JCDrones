@@ -2,7 +2,7 @@ from django.contrib.auth import logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.views import View
-from djitellopy import Tello
+from djitellopy import Tello, TelloSwarm
 from .models import Swarm, Drone, User, AP
 from .forms import APForm, SwarmForm, DroneForm, UpdateDroneForm, UserForm
 from .sync_users import sync_users
@@ -46,12 +46,16 @@ def dashboard(request):
 
 
 def takeoff(request):
-    drone = Drone.objects.get(pk=request.POST.get('drone_id'))
-    tello = Tello(drone.IP_address)
-    tello.connect()
-    tello.takeoff()
-    tello.rotate_counter_clockwise(180)
-    tello.land()
+    swarm = Swarm.objects.get(pk=request.POST.get('swarm_id'))
+    drones = Drone.objects.filter(swarm_ID=swarm)
+    drone_ips = [drone.IP_address for drone in drones]
+    print(drone_ips)
+    drone_swarm = TelloSwarm.fromIps(drone_ips)
+    drone_swarm.connect()
+    drone_swarm.takeoff()
+    drone_swarm.rotate_counter_clockwise(180)
+    drone_swarm.land()
+    drone_swarm.end()
     return render(request, "drones/dashboard.html")
 
 
