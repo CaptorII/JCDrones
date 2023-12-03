@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %} - Drone Launchpad</title>
-    <link rel="icon" type="image/png" href="/favico.png">
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}" >
     <style>
         header nav ul {
             list-style: none;
