@@ -37,6 +37,8 @@
             <input type="hidden" name="drone_id" id="droneIdToTakeoff" value="">
             <button type="submit">Takeoff</button>
         </form>
+        <button onclick="startFetching()">Start Updates</button>
+        <button onclick="stopFetching()">Stop Updates</button>
     {% else %}
         <form method="post" action="{% url 'add_swarm' %}?ap_id={{ active_ap.id }}">
             {% csrf_token %}
@@ -52,6 +54,32 @@
         item.classList.add('selected');
         selectedDroneId = item.getAttribute('data-id');
         document.getElementById('droneIdToTakeoff').value = selectedDroneId;
+    }
+
+    let intervalId;
+    function fetchBatteryUpdates() {
+        intervalId = setInterval(function() {
+            const drones = document.querySelectorAll('#instanceList li');
+            drones.forEach(drone => {
+                const droneId = drone.getAttribute('data-id');
+                fetch(`/drones/get_battery_status/${droneId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update battery status next to the drone's name
+                        drone.innerText = `Name: ${data.name} | IP: ${data.IP} | MAC: ${data.MAC} | Battery: ${data.battery}%`;
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        }, 10000); // Fetch every 10 seconds
+    }
+    function startFetching() {
+        if (!intervalId) {
+            fetchBatteryUpdates();
+        }
+    }
+    function stopFetching() {
+        clearInterval(intervalId);
+        intervalId = null;
     }
 </script>
 {% endblock %}

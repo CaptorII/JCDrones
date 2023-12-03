@@ -58,7 +58,7 @@
         selectedItemId = item.getAttribute('data-id');
         document.getElementById('instanceIdToDelete').value = selectedItemId;
         document.getElementById('instanceIdToUpdate').value = selectedItemId;
-        document.getElementById('instanceIdToUpdate_' + instanceId).value = instanceId;
+        document.getElementById('instanceIdToUpdate_' + selectedItemId).value = selectedItemId;
     }
 
     function rememberSelectedItem() {
