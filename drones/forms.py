@@ -1,8 +1,5 @@
 from django import forms
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
-from . import views
-from .models import AP, Swarm, Drone
+from .models import User, AP, Swarm, Drone
 
 
 class APForm(forms.ModelForm):
@@ -29,3 +26,9 @@ class UpdateDroneForm(forms.ModelForm):
     class Meta:
         model = Drone
         fields = ['drone_name', 'IP_address']
+
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email']

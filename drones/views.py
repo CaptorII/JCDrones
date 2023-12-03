@@ -1,15 +1,37 @@
+from django.contrib.auth import logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 from djitellopy import Tello
 from .models import Swarm, Drone, User, AP
-from .forms import APForm, SwarmForm, DroneForm, UpdateDroneForm
+from .forms import APForm, SwarmForm, DroneForm, UpdateDroneForm, UserForm
 from .sync_users import sync_users
 
 
 def index(request):
     sync_users()
     return render(request, "drones/index.html")
+
+
+def update_email(request):
+    user = User.objects.get(username=request.user.username)
+    form = UserForm(instance=user)
+
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+    return render(request, 'drones/update_email.html', {'form': form})
+
+
+def delete_user(request):
+    if request.method == 'POST':
+        custom_user = get_current_user(request)
+        custom_user.delete()
+        user = request.user
+        user.delete()
+        logout(request)
+    return redirect('index')
 
 
 def dashboard(request):

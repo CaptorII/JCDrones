@@ -22,6 +22,13 @@
 <body>
 <header>
     <h1>Drone Launchpad</h1>
+    {% if user.is_authenticated %}
+        <p>Hello <a href="{% url 'update_email' %}">{{ user.username }}</a>.</p>
+        <form action="{% url 'delete_user' %}" method="post">
+            {% csrf_token %}
+            <input type="submit" value="Delete User">
+        </form>
+    {% endif %}
     <nav>
         <ul>
             <li><a href="{% url 'index' %}">Home</a></li>

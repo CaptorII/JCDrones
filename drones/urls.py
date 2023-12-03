@@ -5,6 +5,8 @@ from registration.views import SignUpView
 urlpatterns = [
     path("", views.index, name="index"),
     path("signup/", SignUpView.as_view(), name="signup"),
+    path('update_email/', views.update_email, name='update_email'),
+    path('delete_user/', views.delete_user, name='delete_user'),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("add_swarm/", views.add_swarm, name="add_swarm"),
     path("add_drone/", views.add_drone, name="add_drone"),
