@@ -37,8 +37,8 @@
             <input type="hidden" name="swarm_id" value="{{ swarm.id }}" />
             <button type="submit">Takeoff</button>
         </form>
-        <button onclick="startFetching()">Start Updates</button>
-        <button onclick="stopFetching()">Stop Updates</button>
+        <button onclick="startFetching()">Start Battery Checking</button>
+        <button onclick="stopFetching()">Stop Checking</button>
     {% else %}
         <form method="post" action="{% url 'add_swarm' %}?ap_id={{ active_ap.id }}">
             {% csrf_token %}
